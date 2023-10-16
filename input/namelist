@@ -14,11 +14,17 @@ lon_lower_left  = -125
 lon_upper_right = -115
 
 opt_frpgen     = 1 
-opt_inputgen   = 1  
-opt_forecast   = 1  
-opt_mapgen     = 1
-opt_corr       = 0
-opt_evaluation = 1
+opt_inputgen   = 1    
+opt_forecast   = 1    
+opt_mapgen     = 1  
+opt_corr       = 1
 
 scale_opt = 0
 scale_val = 2 
+
+path_frp  = /groups/ESS/whung/Alldata/RAVE_3km
+path_elv  = /groups/ESS/whung/Alldata/GMCollections
+path_ast  = /groups/ESS/whung/Alldata/VIIRS_AST
+path_fh   = /groups/ESS/whung/Alldata/GLAD_FH
+path_vhi  = /groups/ESS/whung/Alldata/VIIRS_VHP
+path_mete = /groups/ESS/whung/Alldata/HRRR_2d/nc_file

@@ -54,7 +54,10 @@ def fire_mapper(f_ori, f_predic, opt_corr, scale_opt, scale_val):
     
     print('Valid fires:', np.argwhere(fire_map!=0).shape)
     
-    
+
+    if np.argwhere(fire_map!=0).shape[0] == 0:
+        print('---- WARNING! NO VALID PREDICTED FIRES!')
+
     
     '''Write netCDF file'''
     ## spatial map

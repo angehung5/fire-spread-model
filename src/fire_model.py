@@ -12,7 +12,7 @@ from netCDF4 import Dataset
 import os, datetime, subprocess
 import matplotlib.pyplot as plt
 
-import rave_preprocessor, fire_inputgen, fire_forecast, fire_evaluation
+import rave_preprocessor, fire_inputgen, fire_forecast
 from fire_corr import mlr_correction
 from fire_mapgen import fire_mapper
 from model_score import scoreanalysis
@@ -47,11 +47,10 @@ opt_inputgen   = int(namelist[12])    # input generator option (0: off, 1: on)
 opt_forecast   = int(namelist[13])    # forecast model  option (0: off, 1: on)
 opt_mapgen     = int(namelist[14])    # FRP map generator option (0: off, 1: on)
 opt_corr       = int(namelist[15])    # model correction option (0: off, 1: on)
-opt_evaluation = int(namelist[16])    # model evaluation option (0: off, 1: on)
 
 ## output scaling option
-scale_opt = int(namelist[17])        # output scale option (0: off, 1: on)
-scale_val = float(namelist[18])      # output scale factor
+scale_opt = int(namelist[16])        # output scale option (0: off, 1: on)
+scale_val = float(namelist[17])      # output scale factor
 
 
 
@@ -77,8 +76,7 @@ f_frp = './input/'+time_start+'/'+frp_input+'.'+time_start+'.nc'
 '''Creating initial FRP file'''
 if opt_frpgen == 1:
     if frp_source == 0:
-        # rave frp; default plot opion = on (1), put other values to turn it off
-        rave_preprocessor.preprocessor(frp_input, frp_source, time_start, lat_lim, lon_lim, 1)
+        rave_preprocessor.preprocessor(frp_input, frp_source, time_start, lat_lim, lon_lim)
 
 
 
@@ -93,8 +91,15 @@ for i in np.arange(TT):
 
     ## generate model input based on gridded frp
     if opt_inputgen == 1:
-        fire_inputgen.main_driver(i, f_frp, f_input, lat_lim, lon_lim)
-        print('---- Input generated!')
+        code = fire_inputgen.main_driver(i, f_frp, f_input, lat_lim, lon_lim)
+        if code == 0:
+            print('---- Input generated!')
+        elif code == 1:
+            print('---- Model terminated due to no available input.')
+            exit()
+        elif code == 2:
+            print('---- Model terminated due to no available fire frame.')
+            exit()
 
 
     ## run model forecast + post-process
@@ -115,13 +120,6 @@ for i in np.arange(TT):
         print('---- Fire map generated!')
 
 
-    ## simple model evaluation
-    if opt_evaluation == 1:
-        fire_evaluation.main_driver(f_output, frp_source, opt_corr, lat_lim, lon_lim)
-        scoreanalysis(time_start, TT)
-        print('---- Model evaluation saved!')
-
-
     ## prepare for next cycle
     if i != TT-1:
         f_frp = f_output
@@ -131,6 +129,7 @@ for i in np.arange(TT):
     del [f_input, f_output]
 
 
-#if opt_evaluation == 1:
-#    scoreanalysis(time_start, TT)
-#    print('---- Model score timeseries plotted!')
+
+'''Create model complete file'''
+with open('./output/'+time_start+'/complete_flag.txt', 'w') as file:
+    file.write('MODEL COMPLETE!')

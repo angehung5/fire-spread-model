@@ -1,7 +1,10 @@
 /run_model*
+/fire_model
 src/__pycache__/
 input/2020*/
 output/2020*/
+build/fire_model/
+build/fire_model.spec
 
 # Prerequisites
 *.d

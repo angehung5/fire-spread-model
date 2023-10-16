@@ -21,31 +21,36 @@ warnings.simplefilter(action='ignore')
 
 
 def file_finder(item, date, hour):
+    namelist = pd.read_csv('./input/namelist', header=None, delimiter='=')
+    namelist = namelist[1]
+
     if item == 'elv':
-        return '/groups/ESS/whung/Alldata/GMCollections/ELEV_4X_1Y_V1_Yamazaki.nc'
+        return str(namelist[19].replace(' ', ''))+'/ELEV_4X_1Y_V1_Yamazaki.nc'
     elif item == 'ast':
-        return '/groups/ESS/whung/Alldata/VIIRS_AST/VIIRS_AST_2020_grid3km.nc'
+        return str(namelist[20].replace(' ', ''))+'/VIIRS_AST_2020_grid3km.nc'
     elif item == 'fh':
-        return '/groups/ESS/whung/Alldata/GLAD_FH/GLAD_FH_grid3km_2020.nc'
+        return str(namelist[21].replace(' ', ''))+'/GLAD_FH_grid3km_2020.nc'
     elif item == 'vhi':
         week     = datetime(int(date[:4]), int(date[4:6]), int(date[6:])).isocalendar().week
         lastweek = datetime(int(date[:4]), 12, 31).isocalendar().week
         if week == lastweek:
-            return '/groups/ESS/whung/Alldata/VIIRS_VHP/npp/VHP.G04.C07.npp.P2020'+('%03d'%(lastweek-1))+'.VH.nc', '/groups/ESS/whung/Alldata/VIIRS_VHP/j01/VHP.G04.C07.j01.P2020'+('%03d'%(lastweek-1))+'.VH.nc'
+            return str(namelist[22].replace(' ', ''))+'/npp/VHP.G04.C07.npp.P2020'+('%03d'%(lastweek-1))+'.VH.nc', \
+                   str(namelist[22].replace(' ', ''))+'/j01/VHP.G04.C07.j01.P2020'+('%03d'%(lastweek-1))+'.VH.nc'
         else:
-            return '/groups/ESS/whung/Alldata/VIIRS_VHP/npp/VHP.G04.C07.npp.P2020'+('%03d'%week)+'.VH.nc', '/groups/ESS/whung/Alldata/VIIRS_VHP/j01/VHP.G04.C07.j01.P2020'+('%03d'%week)+'.VH.nc'
+            return str(namelist[22].replace(' ', ''))+'/npp/VHP.G04.C07.npp.P2020'+('%03d'%week)+'.VH.nc', \
+                   str(namelist[22].replace(' ', ''))+'/j01/VHP.G04.C07.j01.P2020'+('%03d'%week)+'.VH.nc'
     elif (item == 't2m') or (item == 't2m_f'):
-        return '/groups/ESS/whung/Alldata/HRRR_2d/nc_file/'+date+'/hrrr_t2m_'+date+'_'+hour+'.nc'
+        return str(namelist[23].replace(' ', ''))+'/'+date+'/hrrr_t2m_'+date+'_'+hour+'.nc'
     elif (item == 'sh2') or (item == 'sh2_f'):
-        return '/groups/ESS/whung/Alldata/HRRR_2d/nc_file/'+date+'/hrrr_sh2_'+date+'_'+hour+'.nc'
+        return str(namelist[23].replace(' ', ''))+'/'+date+'/hrrr_sh2_'+date+'_'+hour+'.nc'
     elif (item == 'tp') or (item == 'tp_f'):
-        return '/groups/ESS/whung/Alldata/HRRR_2d/nc_file/'+date+'/hrrr_prate_'+date+'_'+hour+'.nc'
+        return str(namelist[23].replace(' ', ''))+'/'+date+'/hrrr_prate_'+date+'_'+hour+'.nc'
     elif (item == 'wd') or (item == 'wd_f') or (item == 'ws') or (item == 'ws_f'):
-        return '/groups/ESS/whung/Alldata/HRRR_2d/nc_file/'+date+'/hrrr_u10_'+date+'_'+hour+'.nc', \
-               '/groups/ESS/whung/Alldata/HRRR_2d/nc_file/'+date+'/hrrr_v10_'+date+'_'+hour+'.nc'
+        return str(namelist[23].replace(' ', ''))+'/'+date+'/hrrr_u10_'+date+'_'+hour+'.nc', \
+               str(namelist[23].replace(' ', ''))+'/'+date+'/hrrr_v10_'+date+'_'+hour+'.nc'
     elif (item == 'midws') or (item == 'midws_prefire'):
-        return '/groups/ESS/whung/Alldata/HRRR_2d/nc_file/'+date+'/hrrr_u10_'+date+'_'+hour+'.nc', \
-               '/groups/ESS/whung/Alldata/HRRR_2d/nc_file/'+date+'/hrrr_v10_'+date+'_'+hour+'.nc'
+        return str(namelist[23].replace(' ', ''))+'/'+date+'/hrrr_u10_'+date+'_'+hour+'.nc', \
+               str(namelist[23].replace(' ', ''))+'/'+date+'/hrrr_v10_'+date+'_'+hour+'.nc'
 
 def mapping(xgrid, ygrid, data, xdata, ydata, map_method, fill_value):
     output = griddata((xdata, ydata), data, (xgrid, ygrid), method=map_method, fill_value=fill_value)
@@ -132,8 +137,8 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     filename = file_finder('elv', dd, hh)
     
     if os.path.isfile(filename) == False:
-        print('----Incorrect input file:', 'elv', 'Terminated!')
-        exit()
+        print('---- Incorrect input file:', 'elv', 'Terminated!')
+        return 1
     
     readin = Dataset(filename)
     yt     = readin['lat'][:]
@@ -161,7 +166,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     
     if os.path.isfile(filename) == False:
         print('----Incorrect input file:', 'ast', 'Terminated!')
-        exit()
+        return 1
     
     readin = Dataset(filename)
     yt     = np.flip(readin['lat'][:, 0])
@@ -228,7 +233,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     
     if os.path.isfile(filename) == False:
         print('----Incorrect input file:', 'fh', 'Terminated!')
-        exit()
+        return 1
     
     readin = Dataset(filename)
     yt     = np.flip(readin['lat'][:, 0])
@@ -262,7 +267,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     
     if (os.path.isfile(filename_npp) == False) or (os.path.isfile(filename_j01) == False):
         print('----Incorrect input file:', 'vhi', 'Terminated!')
-        exit()
+        return 1
     
     # npp
     readin = Dataset(filename_npp)
@@ -320,7 +325,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     
     if os.path.isfile(filename) == False:
         print('----Incorrect input file:', 't2m', 'Terminated!')
-        exit()
+        return 1
     
     readin = Dataset(filename)
     yt     = readin['latitude'][:]
@@ -341,7 +346,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     
     if os.path.isfile(filename) == False:
         print('----Incorrect input file:', 'sh2', 'Terminated!')
-        exit()
+        return 1
     
     readin = Dataset(filename)
     yt     = readin['latitude'][:]
@@ -362,7 +367,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     
     if os.path.isfile(filename) == False:
         print('----Incorrect input file:', 'tp', 'Terminated!')
-        exit()
+        return 1
     
     readin = Dataset(filename)
     yt     = readin['latitude'][:]
@@ -384,7 +389,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     
     if (os.path.isfile(filename_u) == False) or (os.path.isfile(filename_v) == False):
         print('----Incorrect input file:', 'ws, wd', 'Terminated!')
-        exit()
+        return 1
     
     readin_u = Dataset(filename_u)
     readin_v = Dataset(filename_v)
@@ -421,7 +426,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     #
     #if os.path.isfile(filename) == False:
     #    print('----Incorrect input file:', 't2m_f', 'Terminated!')
-    #    exit()
+    #    return 1
     #
     #readin = Dataset(filename)
     #yt     = readin['latitude'][:]
@@ -443,7 +448,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     #
     #if os.path.isfile(filename) == False:
     #    print('----Incorrect input file:', 'sh2_f', 'Terminated!')
-    #    exit()
+    #    return 1
     #
     #readin = Dataset(filename)
     #yt     = readin['latitude'][:]
@@ -465,7 +470,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     #
     #if os.path.isfile(filename) == False:
     #    print('----Incorrect input file:', 'tp', 'Terminated!')
-    #    exit()
+    #    return 1
     #
     #readin = Dataset(filename)
     #yt     = readin['latitude'][:]
@@ -488,7 +493,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     #
     #if (os.path.isfile(filename_u) == False) or (os.path.isfile(filename_v) == False):
     #    print('----Incorrect input file:', 'ws, wd', 'Terminated!')
-    #    exit()
+    #    return 1
     #
     #readin_u = Dataset(filename_u)
     #readin_v = Dataset(filename_v)
@@ -588,7 +593,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
         pass
     else:
         print('---- '+tt+' no available frames.')
-        exit()
+        return 2
     
     
     
@@ -642,7 +647,7 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
      
     if INPUTFRAME.shape[1] == 0:
         print('----No available frames!')
-        exit()
+        return 2
     else:
         print('All:', total, 'Skip:', skip, 'NaN:', nan, 'Water', water)
         #print('All:', total, 'Skip:', skip, 'NaN:', nan, 'Small', small, 'Water', water)
@@ -715,3 +720,5 @@ def main_driver(forecast_hour, f_input, f_output, lat_lim, lon_lim):
     var_lon[:]    = LONFRAME
     var_list[:]   = np.array(INPUTLIST).astype(str)
     f.close()
+
+    return 0
