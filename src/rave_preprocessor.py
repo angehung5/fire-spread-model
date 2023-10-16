@@ -20,7 +20,7 @@ warnings.simplefilter(action='ignore')
 def preprocessor(filename, time, lat_lim, lon_lim):
     namelist = pd.read_csv('./input/namelist', header=None, delimiter='=')
     namelist = namelist[1]
-    path_frp = str(namelist[19])
+    path_frp = str(namelist[18])
 
     f_output   = './input/'+time+'/'+filename+'.'+time+'.nc'
 

@@ -38,11 +38,10 @@ opt_inputgen   = int(namelist[12])    # input generator option (0: off, 1: on)
 opt_forecast   = int(namelist[13])    # forecast model  option (0: off, 1: on)
 opt_mapgen     = int(namelist[14])    # FRP map generator option (0: off, 1: on)
 opt_corr       = int(namelist[15])    # model correction option (0: off, 1: on)
-opt_evaluation = int(namelist[16])    # model evaluation option (0: off, 1: on)
 
 ## output scaling option
-scale_opt = int(namelist[17])        # output scale option (0: off, 1: on)
-scale_val = float(namelist[18])      # output scale factor
+scale_opt = int(namelist[16])        # output scale option (0: off, 1: on)
+scale_val = float(namelist[17])      # output scale factor
 
 
 
