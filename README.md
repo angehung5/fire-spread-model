@@ -9,7 +9,7 @@ Forecast model to predict future fire spatial distribution (fire spread) and int
 | frp_input       | Filename of initial fire map                                             |
 | model_input     | Filename of forecast model input                                         |
 | model_output    | Filename of model output                                                 |
-| frp_source      | Option for initial FRP dataset (0: RAVE)                                 |
+| frp_source      | Option for initial FRP data (0: RAVE)                                    |
 | time_start      | Start/initial time stamp in YYYYMMDDHHMM                                 |
 | time_end        | End time stamp in YYYYMMDDHHMM                                           |
 | time_freq       | Integer time steps in hours (default = 1)                                |
@@ -22,14 +22,27 @@ Forecast model to predict future fire spatial distribution (fire spread) and int
 | opt_forecast    | Option for main forecast model (0: off, 1: on)                           |
 | opt_mapgen      | Option for fire mapper (0: off, 1: on)                                   |
 | opt_corr        | Option for intensity correction model (0: off, 1: on)                    |
-| opt_evaluation  | Option for model evaluation analysis (0: off, 1: on)                     |
 | scale_opt       | Option for final FRP scaling (0: off, 1: on)                             |
 | scale_val       | Scale factor for final FRP scaling, only available when scale_opt = 1    |
+| path_frp        | Local location of inital FRP data                                        |
+| path_elv        | Local location of elevation data                                         |
+| path_ast        | Local location of fuel/surface type data                                 |
+| path_fh         | Local location of canopy/forest height data                              |
+| path_vhi        | Local location of vegetation health index data                           |
+| path_mete       | Local location of metelogical model data                                 |
 
-## How to run
+
+## How to run in python environment
 
 python src/fire_model.py
+
 Computational resource for a 24h cycle: 12 nodes, 8G mem, 1 hour
+
+## How to run as a standalond exe
+
+./build/compile.sh
+
+./fire_model
 
 ## Inputs
 
@@ -49,10 +62,3 @@ Spatial distribution and intensity of individual fires and gridded fire map for 
 
 5. Fire mapper: Map individual fires to gridded domain and create predicted fire map as final product.
 
-6. Model evaluation: Perform simple evaluation analysis including model score matrix (bias, R2, RMSE, MRE, ratio*), spatial similarity** and alarm rates***), and plot analysis figures (scatter plot, kernel density estimate (KDE) plot, observed/predicted FRP spatial map for visual comparison and timeseries of model score maxtrix).
-
-*Ratio = prediction / observation
-
-**Spatial similiarty based on Hamming distance, lower the value higher spatial similiarty
-
-***Three alarm rates are calcualted: True (model matches the real fire), false (model shows a fire that observation does not see), missing (model misses the fire). Consider fire spatial distribution only.
