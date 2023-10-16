@@ -17,25 +17,22 @@ warnings.simplefilter(action='ignore')
 
 
 
-def preprocessor(filename, frp_option, time, lat_lim, lon_lim):
+def preprocessor(filename, time, lat_lim, lon_lim):
     namelist = pd.read_csv('./input/namelist', header=None, delimiter='=')
     namelist = namelist[1]
-    path_frp = str(namelist[18])
+    path_frp = str(namelist[19])
 
     f_output   = './input/'+time+'/'+filename+'.'+time+'.nc'
 
     date = time[:8]
     hour = time[8:10]
     
-    if not os.path.exists('./input/'+time):
-        os.makedirs('./input/'+time)
-
 
     '''Reading Data'''
-    if frp_option == 0:    # RAVE
-        f_ori = path_frp+'/Hourly_Emissions_3km_'+date+'0000_'+date+'2300.nc'
-        hour_index = int(hour)
+    f_ori = path_frp+'/Hourly_Emissions_3km_'+date+'0000_'+date+'2300.nc'
+    hour_index = int(hour)
     
+    if os.path.isfile(f_ori) == True:
         readin = Dataset(f_ori)
         yt = np.flip(readin['grid_latt'][:, 0])
         xt = readin['grid_lont'][0, :]
@@ -71,8 +68,7 @@ def preprocessor(filename, frp_option, time, lat_lim, lon_lim):
         del [readin, yt, xt, qa, index1, index2]
     
     else:
-        print('No available or unknown FRP source. Terminated!')
-        exit()
+        return 1
 
 
     
@@ -92,3 +88,5 @@ def preprocessor(filename, frp_option, time, lat_lim, lon_lim):
     var_lon[:] = xt_grid
     var_time[:] = np.array(time).astype(str)
     f.close()
+
+    return 0

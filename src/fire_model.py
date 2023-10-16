@@ -6,17 +6,8 @@ This is the main script to run the fire spread model.
 """
 
 import numpy as np
-import scipy.io as io
 import pandas as pd
-from netCDF4 import Dataset
-import os, datetime, subprocess
-import matplotlib.pyplot as plt
-
-import rave_preprocessor, fire_inputgen, fire_forecast
-from fire_corr import mlr_correction
-from fire_mapgen import fire_mapper
-from model_score import scoreanalysis
-
+import os
 
 
 '''Settings'''
@@ -47,10 +38,11 @@ opt_inputgen   = int(namelist[12])    # input generator option (0: off, 1: on)
 opt_forecast   = int(namelist[13])    # forecast model  option (0: off, 1: on)
 opt_mapgen     = int(namelist[14])    # FRP map generator option (0: off, 1: on)
 opt_corr       = int(namelist[15])    # model correction option (0: off, 1: on)
+opt_evaluation = int(namelist[16])    # model evaluation option (0: off, 1: on)
 
 ## output scaling option
-scale_opt = int(namelist[16])        # output scale option (0: off, 1: on)
-scale_val = float(namelist[17])      # output scale factor
+scale_opt = int(namelist[17])        # output scale option (0: off, 1: on)
+scale_val = float(namelist[18])      # output scale factor
 
 
 
@@ -76,7 +68,13 @@ f_frp = './input/'+time_start+'/'+frp_input+'.'+time_start+'.nc'
 '''Creating initial FRP file'''
 if opt_frpgen == 1:
     if frp_source == 0:
-        rave_preprocessor.preprocessor(frp_input, frp_source, time_start, lat_lim, lon_lim)
+        import rave_preprocessor
+        code = rave_preprocessor.preprocessor(frp_input, time_start, lat_lim, lon_lim)
+        if code == 0:
+            print('---- Initial FRP generated!')
+        elif code == 1:
+            print('No available or unknown initial FRP. Model Terminated!')
+            exit()
 
 
 
@@ -91,31 +89,35 @@ for i in np.arange(TT):
 
     ## generate model input based on gridded frp
     if opt_inputgen == 1:
+        import fire_inputgen
         code = fire_inputgen.main_driver(i, f_frp, f_input, lat_lim, lon_lim)
         if code == 0:
             print('---- Input generated!')
         elif code == 1:
-            print('---- Model terminated due to no available input.')
+            print('---- No available input. Model terminated!')
             exit()
         elif code == 2:
-            print('---- Model terminated due to no available fire frame.')
+            print('---- No available fire frame. Model terminated!')
             exit()
 
 
     ## run model forecast + post-process
     if opt_forecast == 1:
+        import fire_forecast
         fire_forecast.spread_forecast(f_input, f_output)
-        print('---- Forecast generated!')
+        print('---- Spread prediction generated!')
 
 
     ## model correction
     if opt_corr == 1:
+        from fire_corr import mlr_correction
         mlr_correction(f_input, f_output)
-        print('---- Model correction generated!')
+        print('---- Intensity prediction generated!')
 
 
     ## generate predicted fire maps
     if opt_mapgen == 1:
+        from fire_mapgen import fire_mapper
         fire_mapper(f_frp, f_output, opt_corr, scale_opt, scale_val)
         print('---- Fire map generated!')
 
@@ -132,4 +134,4 @@ for i in np.arange(TT):
 
 '''Create model complete file'''
 with open('./output/'+time_start+'/complete_flag.txt', 'w') as file:
-    file.write('MODEL COMPLETE!')
+    file.write('MODEL COMPLETE!\n')
