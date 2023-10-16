@@ -12,7 +12,7 @@ import os, datetime
 import tensorflow as tf
 from keras.models import load_model
 from tensorflow.keras.optimizers import Adam, Adamax     # Kingma and Ba 2015, https://arxiv.org/abs/1412.6980
-from keras.backend import clear_session
+from keras import backend as K
 
 import warnings
 warnings.simplefilter(action='ignore')
